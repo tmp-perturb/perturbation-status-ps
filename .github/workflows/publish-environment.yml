@@ -22,4 +22,4 @@ jobs:
       - name: Log in to GHCR
         run: printf '%s' "${{ secrets.GITHUB_TOKEN }}" | apptainer registry login --username "${{ github.actor }}" --password-stdin oras://ghcr.io
       - name: Publish immutable release tag
-        run: apptainer push ps.sif oras://ghcr.io/tmp-perturb/perturbation-status-ps:0.4.0
+        run: apptainer push ps.sif oras://ghcr.io/tmp-perturb/perturbation-status-ps:0.4.1
