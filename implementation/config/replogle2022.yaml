@@ -1,0 +1,19 @@
+module: M05
+method: Perturbation-response Score
+dataset: replogle2022
+source_h5ad: runtime/source/01_standardize_inputs/outputs/replogle2022/perturbation_adata.h5ad
+input_dir: runtime/source/05_ps/inputs/replogle2022
+shared_sparse_input_dir: runtime/source/03_mixscape/inputs/replogle2022_gene_sa
+seurat_rds: runtime/source/05_ps/inputs/replogle2022/ps_input.rds
+guide_field: guide_id
+non_target_control: non-targeting
+row_chunk_size: 512
+feature_policy: gene_level_S_plus_A
+selection:
+  eligible_assignment_structures:
+    - single_guide
+    - concordant_construct
+normalization:
+  method: LogNormalize
+  scale_factor: 10000
+

@@ -1,0 +1,25 @@
+name: Publish fixed environment
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.4.2
+      - name: Build and test image
+        run: apptainer build ps.sif environment/ps.def
+      - name: Log in to GHCR
+        run: printf '%s' "${{ secrets.GITHUB_TOKEN }}" | apptainer registry login --username "${{ github.actor }}" --password-stdin oras://ghcr.io
+      - name: Publish immutable release tag
+        run: apptainer push ps.sif oras://ghcr.io/tmp-perturb/perturbation-status-ps:0.4.0

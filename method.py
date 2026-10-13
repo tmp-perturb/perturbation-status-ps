@@ -13,7 +13,10 @@ import tempfile
 import time
 from pathlib import Path
 
-from common import dump_yaml, load_yaml, make_archive, r_env, rscript, run, write_json
+from common import dump_yaml, load_yaml, make_archive, rscript, run, write_json
+
+HERE = Path(__file__).resolve().parent
+IMPLEMENTATION = HERE / "implementation"
 
 
 def main() -> None:
@@ -31,12 +34,11 @@ def main() -> None:
     output.mkdir(parents=True, exist_ok=True)
     spec = json.loads(Path(getattr(args, "data.spec")).read_text(encoding="utf-8"))
     h5ad = Path(getattr(args, "data.h5ad")).resolve()
-    project = Path(spec["project_root"])
     started = time.monotonic()
 
     with tempfile.TemporaryDirectory(prefix=f"pse-ps-{args.name}-") as temp_text:
         work = Path(temp_text)
-        input_config = load_yaml(spec["ps_input_config"])
+        input_config = load_yaml(IMPLEMENTATION / "config" / f'{spec["dataset"]}.yaml')
         input_dir = work / "ps_input"
         input_config.update({
             "dataset": spec["dataset"], "source_h5ad": str(h5ad),
@@ -45,12 +47,11 @@ def main() -> None:
         })
         input_path = work / "ps_input.yaml"
         dump_yaml(input_config, input_path)
-        run([sys.executable, project / "05_ps" / "adapt_ps_input.py", "--config", input_path])
+        run([sys.executable, IMPLEMENTATION / "adapt_ps_input.py", "--config", input_path])
         run(
-            [rscript(project, "ps"), project / "05_ps" / "build_ps_seurat.R", "--config", input_path],
-            env=r_env(project, "ps"),
+            [rscript(), IMPLEMENTATION / "build_ps_seurat.R", "--config", input_path],
         )
-        config = load_yaml(spec["ps_run_config"])
+        config = load_yaml(IMPLEMENTATION / "config" / f'{spec["dataset"]}_scalable.yaml')
         ps_output = work / "ps"
         config.update({
             "dataset": spec["dataset"], "input_rds": str(input_dir / "ps_input.rds"),
@@ -61,8 +62,7 @@ def main() -> None:
         config_path = work / "ps_run.yaml"
         dump_yaml(config, config_path)
         run(
-            [sys.executable, project / "05_ps" / "sharding" / "run_scalable.py", "--config", config_path],
-            env=r_env(project, "ps"),
+            [sys.executable, IMPLEMENTATION / "sharding" / "run_scalable.py", "--config", config_path],
         )
         result = ps_output / "ps_metadata.tsv"
         if not result.is_file():

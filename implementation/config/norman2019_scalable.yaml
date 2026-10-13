@@ -1,0 +1,23 @@
+module: M05
+method: Perturbation-response Score
+dataset: norman2019
+execution_mode: pooled_global_union_sharded
+input_rds: runtime/source/05_ps/inputs/norman2019/ps_input.rds
+barcode_table: runtime/source/05_ps/inputs/norman2019/barcode.tsv.gz
+output_dir: runtime/source/05_ps/outputs/norman2019/scalable
+work_dir: runtime/source/05_ps/work/norman2019_scalable
+non_target_control: non-targeting
+shards: 16
+max_workers: 2
+seed: 20260911
+parameters:
+  scale_factor: 3
+  target_gene_min: 10
+  target_gene_max: 500
+  gene_fraction: 0.01
+  logfc_threshold: 0.1
+  lambda: 0
+  scale_score: true
+  background_correction: false
+  use_perturb_exp: true
+

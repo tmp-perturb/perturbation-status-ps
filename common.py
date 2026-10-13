@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import shutil
 import tarfile
 from pathlib import Path
 from typing import Any
@@ -46,19 +47,13 @@ def run(command: list[str | Path], *, log: Path | None = None, env: dict[str, st
         subprocess.run(command, check=True, env=merged_env, stdout=stream, stderr=subprocess.STDOUT)
 
 
-def rscript(project: Path, environment: str) -> Path:
-    path = project / "environments" / environment / "env" / "bin" / "Rscript"
-    if not path.is_file():
-        raise FileNotFoundError(path)
+def rscript() -> str:
+    path = shutil.which("Rscript")
+    if path is None:
+        raise FileNotFoundError("Required executable is not on PATH: Rscript")
     return path
 
 
-def r_env(project: Path, environment: str) -> dict[str, str]:
-    prefix = project / "environments" / environment / "env"
-    return {
-        "R_LIBS_USER": str(prefix / "lib" / "R" / "library"),
-        "PATH": f"{prefix / 'bin'}:{os.environ.get('PATH', '')}",
-    }
 
 
 def make_archive(source: Path, destination: Path, arcname: str) -> None:

@@ -1,0 +1,23 @@
+module: M05
+method: Perturbation-response Score
+dataset: replogle2022
+execution_mode: pooled_global_union_sharded
+input_rds: runtime/source/05_ps/inputs/replogle2022/ps_input.rds
+barcode_table: runtime/source/05_ps/inputs/replogle2022/barcode.tsv.gz
+output_dir: runtime/source/05_ps/outputs/replogle2022/scalable
+work_dir: runtime/source/05_ps/work/replogle2022_scalable
+non_target_control: non-targeting
+shards: 32
+max_workers: 4
+min_target_cells: 3
+seed: 20260911
+parameters:
+  scale_factor: 3
+  target_gene_min: 10
+  target_gene_max: 500
+  gene_fraction: 0.01
+  logfc_threshold: 0.1
+  lambda: 0
+  scale_score: true
+  background_correction: false
+  use_perturb_exp: true
