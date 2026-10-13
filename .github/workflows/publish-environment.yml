@@ -6,8 +6,7 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: read
-  packages: write
+  contents: write
 
 jobs:
   publish:
@@ -19,7 +18,9 @@ jobs:
           apptainer-version: 1.4.2
       - name: Build and test image
         run: apptainer build ps.sif environment/ps.def
-      - name: Log in to GHCR
-        run: printf '%s' "${{ secrets.GITHUB_TOKEN }}" | apptainer registry login --username "${{ github.actor }}" --password-stdin oras://ghcr.io
-      - name: Publish immutable release tag
-        run: apptainer push ps.sif oras://ghcr.io/tmp-perturb/perturbation-status-ps:0.4.1
+      - name: Publish public release image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view v0.4.2 >/dev/null 2>&1 || gh release create v0.4.2 --title "Fixed environment v0.4.2" --notes "Versioned Apptainer environment for the Omnibenchmark PS module."
+          gh release upload v0.4.2 ps.sif --clobber
