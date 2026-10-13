@@ -13,10 +13,11 @@ import tempfile
 import time
 from pathlib import Path
 
-from common import dump_yaml, load_yaml, make_archive, rscript, run, write_json
+from common import dump_yaml, load_yaml, make_archive, prepare_r_library, rscript, run, write_json
 
 HERE = Path(__file__).resolve().parent
 IMPLEMENTATION = HERE / "implementation"
+VENDOR = HERE / "vendor"
 
 
 def main() -> None:
@@ -38,6 +39,10 @@ def main() -> None:
 
     with tempfile.TemporaryDirectory(prefix=f"pse-ps-{args.name}-") as temp_text:
         work = Path(temp_text)
+        r_env = prepare_r_library(
+            work,
+            [VENDOR / "presto-3c97180d.tar.gz", VENDOR / "scmageck-e24aa0f3.tar.gz"],
+        )
         input_config = load_yaml(IMPLEMENTATION / "config" / f'{spec["dataset"]}.yaml')
         input_dir = work / "ps_input"
         input_config.update({
@@ -50,6 +55,7 @@ def main() -> None:
         run([sys.executable, IMPLEMENTATION / "adapt_ps_input.py", "--config", input_path])
         run(
             [rscript(), IMPLEMENTATION / "build_ps_seurat.R", "--config", input_path],
+            env=r_env,
         )
         config = load_yaml(IMPLEMENTATION / "config" / f'{spec["dataset"]}_scalable.yaml')
         ps_output = work / "ps"
@@ -63,6 +69,7 @@ def main() -> None:
         dump_yaml(config, config_path)
         run(
             [sys.executable, IMPLEMENTATION / "sharding" / "run_scalable.py", "--config", config_path],
+            env=r_env,
         )
         result = ps_output / "ps_metadata.tsv"
         if not result.is_file():

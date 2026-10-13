@@ -7,6 +7,7 @@ It accepts the stage-level shared-artifact flag for Omnibenchmark contract
 compatibility but deliberately does not read that artifact.
 
 The reviewed PS implementation and dataset configuration are versioned under
-`implementation/`, while `environment/ps.def` fixes the R/Python environment
-and upstream scMAGeCK and presto revisions. The module does not access the
-original benchmark development directory at runtime.
+`implementation/`. Public dependencies are supplied by the plan's Conda YAML;
+exact scMAGeCK and presto revisions are archived under `vendor/` and installed
+into a task-local R library at runtime. The module does not access the original
+benchmark development directory, a personal R library, or the network.
